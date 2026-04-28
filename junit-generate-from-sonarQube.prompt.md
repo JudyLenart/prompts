@@ -23,7 +23,7 @@ The Quality Gate measures **Coverage on New Code** only (not overall project cov
 2. **Open the Sonar “Coverage on New Code” file list** for the PR (same data as the measures UI), e.g.  
    `…/component_measures?id=<PROJECT_KEY>&pullRequest=<PR_KEY>&metric=new_coverage&view=list`  
    Sort by **uncovered lines** / lowest file coverage. Treat every file in that list with material new code as **in scope**.
-3. **Run** `scripts/sonar/sonar_pr_uncovered_lines.sh` once at the start (same `SONAR_URL`, `SONAR_TOKEN`, `PROJECT_KEY`, `PR_KEY`) to get **per-file** `new_uncovered_lines` / `new_uncovered_conditions` for **prioritization**. Counts are not enough to stop — they tell you **where the missing ~16+ points** (90 − 74) almost certainly live.
+3. **Run** `scripts-sonar/sonar_pr_uncovered_lines.sh` once at the start (same `SONAR_URL`, `SONAR_TOKEN`, `PROJECT_KEY`, `PR_KEY`) to get **per-file** `new_uncovered_lines` / `new_uncovered_conditions` for **prioritization**. Counts are not enough to stop — they tell you **where the missing ~16+ points** (90 − 74) almost certainly live.
 4. **Merge lists**: every file appearing in **either** the Sonar measures list **or** the script **or** `git diff --name-only` for `src/main/java` must appear on your working checklist. **No file gets dropped** because “it looked small.”
 5. **Poll the gate before declaring done** (when token works):  
    `GET ${SONAR_URL}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}&pullRequest=${PR_KEY}`  
@@ -123,7 +123,7 @@ Generate JUnit test cases that specifically target the files, line numbers, and 
 
 ### Limitation of `sonar_pr_uncovered_lines.sh` (critical)
 
-The script at `scripts/sonar/sonar_pr_uncovered_lines.sh` outputs **per-file counts** (`new_uncovered_lines`, `new_uncovered_conditions`) — **not** individual line numbers. **Counts alone are insufficient** to know when to stop; they caused premature stopping with **~74–87%** gate coverage while many files still had non-zero counts. **Also:** if `SONAR_TOKEN` is wrong, the script may print **nothing** (filtering yields no rows) while the API returned **401** — always perform the **authenticated** `curl` check in step 1 of the one-shot list before treating empty script output as “no uncovered lines.”
+The script at `scripts-sonar/sonar_pr_uncovered_lines.sh` outputs **per-file counts** (`new_uncovered_lines`, `new_uncovered_conditions`) — **not** individual line numbers. **Counts alone are insufficient** to know when to stop; they caused premature stopping with **~74–87%** gate coverage while many files still had non-zero counts. **Also:** if `SONAR_TOKEN` is wrong, the script may print **nothing** (filtering yields no rows) while the API returned **401** — always perform the **authenticated** `curl` check in step 1 of the one-shot list before treating empty script output as “no uncovered lines.”
 
 You must also obtain **line- or branch-level** targets using one or more of:
 
